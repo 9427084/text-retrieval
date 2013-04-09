@@ -99,7 +99,7 @@ public class Indexer {
             
             // iterate through the tokens of the current file content
             while (wordTokenizer.hasMoreElements()) {
-                token = wordTokenizer.nextElement().toString().trim();
+                token = wordTokenizer.nextElement().toString().trim().toLowerCase();
                 
                 // optional stemming
                 if (stemming)
@@ -255,7 +255,7 @@ public class Indexer {
                     Instance blockInstance = blockInstEnum.nextElement();
 
                     // sparse instances do not work correctly
-                    // the first attribute value ist lost when saving if it is a string
+                    // the first attribute value is lost when saving if it is a string
                     // SparseInstance newInstance = new SparseInstance(index.numAttributes());
                     Instance newInstance = new Instance(index.numAttributes());
                     newInstance.setDataset(index);
