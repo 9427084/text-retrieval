@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import weka.core.Attribute;
-import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
@@ -29,21 +28,8 @@ public class TFIDF {
         log.info("Started creating TF-IDF weights ...");
         
         Instances index = null;
-        Instances weights = null;
         try {
             index = new DataSource(indexFile).getDataSet();
-            
-            FastVector attributes = new FastVector(index.numAttributes());
-            for (int i = 0; i < index.numAttributes(); i++)
-                attributes.addElement(index.attribute(i));
-
-            weights = new Instances("tfidf", attributes, index.numInstances());
-            for (int i = 0; i < index.numInstances(); i++) {
-                Instance newInstance = new Instance(index.numAttributes());
-                newInstance.setValue(0, index.instance(i).value(0));
-                newInstance.setValue(1, index.instance(i).value(1));
-                weights.add(newInstance);
-            }
             
             log.info("Processing " + index.numAttributes() + " terms");
 
@@ -63,8 +49,8 @@ public class TFIDF {
                 
                 // compute the TF and the TF-IDF
                 for (int j = 0; j < index.numInstances(); j++) {
-                    weights.instance(j).setValue(weights.attribute(attribute.name()), 
-                            Math.log(1 + index.instance(j).value(attribute)) * idf);
+                    Instance currentInstance = index.instance(j);
+                    currentInstance.setValue(attribute, Math.log(1 + currentInstance.value(attribute)) * idf);
                 }
             }
             log.info(index.numAttributes() + " terms done");
@@ -75,7 +61,7 @@ public class TFIDF {
         
         try {
             ArffSaver saver = new ArffSaver();
-            saver.setInstances(weights);
+            saver.setInstances(index);
             saver.setFile(new File(weightsFile));
             saver.setCompressOutput(true);
             saver.writeBatch();
