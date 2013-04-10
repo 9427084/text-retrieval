@@ -11,6 +11,8 @@ public class TextRetrieval {
 	
 	private static Logger log = LoggerFactory.getLogger(TextRetrieval.class);
 
+	public enum postingListSize { small, medium, large };
+
     private static String[] topicSet = {
             "misc.forsale/76057",
             "talk.religion.misc/83561",
@@ -107,7 +109,7 @@ public class TextRetrieval {
                         return;                    
                     }
                     
-                    new CosineSimilarity(weightsFile, target).findSimilar(topicSet);
+                    new CosineSimilarity(weightsFile, target, TextRetrieval.postingListSize.small).findSimilar(topicSet);
                     
                 } else {
                     TextRetrieval.usage();
