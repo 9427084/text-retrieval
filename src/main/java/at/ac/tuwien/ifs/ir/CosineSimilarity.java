@@ -10,6 +10,8 @@ import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import at.ac.tuwien.ifs.ir.TextRetrieval.postingListSize;
+
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 
@@ -19,20 +21,22 @@ public class CosineSimilarity {
     
     private String weightsFile = null;
     private String target = ".";
+    private postingListSize postingListSize;
     
-    public CosineSimilarity(String weightsFile, String target) {
+    public CosineSimilarity(String weightsFile, String target, TextRetrieval.postingListSize postingListSize) {
         this.weightsFile = weightsFile;
         this.target = target;
+        this.postingListSize = postingListSize; 
     }
     
     public void findSimilar(String[] documentIDs) {
         log.info("Started similarity retrieval ...");
-        for (String documentID : documentIDs)
-            findSimilar(documentID);
+        for (int i = 0; i < documentIDs.length; i++)
+            findSimilar(documentIDs[i], i + 1);
         log.info("Done similarity retrieval");
     }
     
-    public void findSimilar(String documentID) {
+    public void findSimilar(String documentID, int topicNumber) {
         log.info("Started searching for similar documents for " + documentID + " ...");
         
         Instances weights = null;
@@ -56,7 +60,7 @@ public class CosineSimilarity {
             Rank[] top10Ranks = new Rank[10];
             // initialize with something smaller than -1 (smallest value for cosine similarity)
             for (int i = 0; i < 10; i++)
-                top10Ranks[i] = new Rank(-1.1, null, null);
+                top10Ranks[i] = new Rank(-1.1, null);
 
             for (int i = 0; i < weights.numInstances(); i++) {
                 if (i == queryIndex)
@@ -65,12 +69,12 @@ public class CosineSimilarity {
                 double newSimilarity = computeCosineSimilarity(weights, queryIndex, i);
                 
                 if (top10Ranks[0].similarity < newSimilarity)
-                    top10Ranks[0] = new Rank(newSimilarity, weights.instance(i).stringValue(0), weights.instance(i).stringValue(1));
+                    top10Ranks[0] = new Rank(newSimilarity, weights.instance(i).stringValue(0));
                 Arrays.sort(top10Ranks);
             }
             log.info("Found 10 most similar documents for " + documentID);
 
-            String filename = target + "/" + documentID + ".txt";
+            String filename = target + "/" + postingListSize + "_topic" + topicNumber + "_groupG.txt";
             try {
                 File file = new File(filename.substring(0, filename.lastIndexOf("/")));
                 if (!file.exists()) { 
@@ -84,12 +88,13 @@ public class CosineSimilarity {
                 FileWriter fileWriter = new FileWriter(filename);
                 BufferedWriter out = new BufferedWriter(fileWriter);
                 Collections.reverse(Arrays.asList(top10Ranks));
-                for (int i = 0; i < 10; i++)
-                    out.write("topic " + top10Ranks[i].documentClass 
+                for (int i = 0; i < 10; i++) {
+                    out.write("topic" + topicNumber
                             + " Q0 " + top10Ranks[i].documentID 
                             + " " + (i + 1)
                             + " " + top10Ranks[i].similarity
-                            + " groupG_large\r\n");
+                            + " groupG_" + postingListSize + "\r\n");
+                }
                 out.close();
                 
                 log.info("Wrote results to " + filename);
@@ -114,7 +119,9 @@ public class CosineSimilarity {
         for (int i = 2; i < weights.numAttributes(); i++ ) {
             
             double queryValue = weights.instance(queryIndex).value(i);
+            queryValue = Double.isNaN(queryValue) ? 0 : queryValue;
             double documentValue = weights.instance(documentIndex).value(i);
+            documentValue = Double.isNaN(documentValue) ? 0 : documentValue;
             
             dotProduct += queryValue*documentValue;
             queryEuclidean += Math.pow(queryValue, 2);
@@ -127,12 +134,9 @@ public class CosineSimilarity {
 
         public Double similarity;
         public String documentID;
-        private String documentClass;
-        
-        public Rank(Double similarity, String documentID, String documentClass) {
+        public Rank(Double similarity, String documentID) {
             this.similarity = similarity;
             this.documentID = documentID;
-            this.documentClass = documentClass;
         }
 
         @Override
