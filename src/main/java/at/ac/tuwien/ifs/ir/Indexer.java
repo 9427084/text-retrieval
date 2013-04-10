@@ -85,6 +85,7 @@ public class Indexer {
         wordTokenizer.setDelimiters(wordTokenizer.getDelimiters() + "");
         wordTokenizer.setDelimiters(wordTokenizer.getDelimiters() + "");
         wordTokenizer.setDelimiters(wordTokenizer.getDelimiters() + "");
+        wordTokenizer.setDelimiters(wordTokenizer.getDelimiters() + "");
         SnowballStemmer stemmer = new SnowballStemmer();
         
         int entryCounter = 0;
