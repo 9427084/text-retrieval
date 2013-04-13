@@ -35,7 +35,7 @@ public class TextRetrieval {
             "sci.space/60779",
             "sci.med/59456"
     };
-	
+
     public static void main( String[] args ) {
 
         try {
@@ -109,7 +109,7 @@ public class TextRetrieval {
                         return;                    
                     }
                     
-                    new CosineSimilarity(weightsFile, target, TextRetrieval.postingListSize.small).findSimilar(topicSet);
+                    new CosineSimilarity(weightsFile, target, TextRetrieval.postingListSize.medium).findSimilar(topicSet);
                     
                 } else {
                     TextRetrieval.usage();

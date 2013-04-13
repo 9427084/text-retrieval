@@ -58,7 +58,10 @@ public class CosineSimilarity {
             }
             
             Rank[] top10Ranks = new Rank[10];
-            // initialize with something smaller than -1 (smallest value for cosine similarity)
+            // initialize with something smaller than 0
+            // the cosine similarity here is between 0 and 1, because the weights are not negative
+            // therefore the angle between the vectors will not be greater than 90° meaning a 0
+            // generally cosine similarity will vary between -1 and 1
             for (int i = 0; i < 10; i++)
                 top10Ranks[i] = new Rank(-1.1, null);
 
@@ -127,7 +130,8 @@ public class CosineSimilarity {
             queryEuclidean += Math.pow(queryValue, 2);
             documentEuclidean += Math.pow(documentValue, 2);
         }
-        return dotProduct / (Math.sqrt(queryEuclidean) * Math.sqrt(documentEuclidean));
+        double euclideans = Math.sqrt(queryEuclidean) * Math.sqrt(documentEuclidean);
+        return euclideans == 0.0 ? 0.0 : dotProduct / euclideans;
     }
 
     private class Rank implements Comparable<Rank> {
